@@ -1,4 +1,4 @@
-# vite-plugin-mock
+# vite-plugin-file-mock [![npm](https://img.shields.io/npm/v/vite-plugin-file-mock.svg)](https://npmjs.com/package/vite-plugin-file-mock)
 
 > File system based mock plugin for vite
 
@@ -8,16 +8,16 @@
 
 ### Install
 ```shell
-yarn add @veno/vite-plugin-mock -D
+yarn add vite-plugin-file-mock -D
 # or
-npm i @veno/vite-plugin-mock -D
+npm i vite-plugin-file-mock -D
 ```
 
 ### Usage
 
 ```js
 // vite.config.js
-import mockPlugin from '@veno/vite-plugin-mock'
+import mockPlugin from 'vite-plugin-file-mock'
 
 export default {
   plugins: [

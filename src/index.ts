@@ -3,7 +3,7 @@ import { resolve } from 'path';
 import type { ViteDevServer, Plugin, ResolvedConfig } from 'vite';
 import debug from 'debug';
 
-const log = debug('veno:vite-plugin-mock');
+const log = debug('vite-plugin-file-mock');
 const defaultDir = 'mock';
 
 export interface MockPluginOptions {
@@ -70,7 +70,7 @@ export default function mockPlugin(options?: MockPluginOptions): Plugin {
     let viteRoot: string;
     const resolvedOptions: MockPluginOptions = { ...defaultOptions, ...(options ?? {}) };
     return {
-        name: '@veno/vite-plugin-mock',
+        name: 'vite-plugin-file-mock',
         enforce: 'pre',
         apply: 'serve',
         configResolved({ root }: ResolvedConfig) {
