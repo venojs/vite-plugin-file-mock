@@ -28,9 +28,9 @@ export default {
 
 ```ts
 interface MockPluginOptions {
-    dir?: string; // default 'mock'
-    enable?: boolean;
-    refreshOnSave?: boolean; // default true
+  dir?: string; // default 'mock'
+  enable?: boolean;
+  refreshOnSave?: boolean; // default true
 }
 ```
 ## Options
@@ -68,7 +68,7 @@ The above directory structure will generate two apis `/api/home` and `/api/user`
 ```js
 // home.js
 module.exports = {
-    result: 1,
+  result: 1,
 }
 ```
 ```js
@@ -80,16 +80,16 @@ Sometimes we need to customize the returned content, we can return a function to
 ```js
 // user.js
 module.exports = (request) => {
-    if (request.method === 'GET') {
-        return {
-            result: 1,
-            method: request.method,
-        }
-    } else {
-        return {
-            result: 2,
-            method: request.method,
-        }
-    }
+  if (request.method === 'GET') {
+    return {
+      result: 1,
+        method: request.method,
+      }
+  } else {
+    return {
+      result: 2,
+        method: request.method,
+      }
+  }
 }
 ```
