@@ -48,7 +48,6 @@ function handleMock(server: ViteDevServer, root: string, options: MockPluginOpti
         server.watcher.on(event, (path: string) => {
             if (path.startsWith(mockDirPath)) {
                 log(`File ${path} has been ${event}`);
-                // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
                 delete require.cache[path];
                 if (options.refreshOnSave) {
                     server.ws.send({
