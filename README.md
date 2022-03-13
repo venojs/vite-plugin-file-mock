@@ -45,6 +45,7 @@ The mock file folder relative to vite root, use `mock` by default
 - **Default:** `true`
 
 Enable mock plugin or not.
+
 This plugin load only in `serve`
 
 ### refreshOnSave
