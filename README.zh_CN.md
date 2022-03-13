@@ -4,16 +4,16 @@
 
 **中文** | [English](./README.md)
 
-## 开始
-
-### 安装
+## 安装
 ```shell
 yarn add vite-plugin-file-mock -D
 # or
 npm i vite-plugin-file-mock -D
 ```
 
-### 使用
+## 使用
+
+可以看看这个[例子](./example/)
 
 ```js
 // vite.config.js
@@ -26,7 +26,6 @@ export default {
 }
 ```
 
-### 选项
 ```ts
 interface MockPluginOptions {
     dir?: string;
@@ -34,7 +33,28 @@ interface MockPluginOptions {
     refreshOnSave?: boolean;
 }
 ```
-## 用法
+
+## 选项
+### dir
+- **Type:** `string`
+- **Default:** `mock`
+
+本地mock文件所在的路径, 相对于vite root, 默认是vite root下的mock文件夹
+
+### enable
+- **Type:** `boolean`
+- **Default:** `true`
+
+是否开启mock功能
+此插件只在`serve`阶段生效
+
+### refreshOnSave
+- **Type:** `boolean`
+- **Default:** `true`
+
+当mock文件变更, 是否刷新浏览器
+
+## 概览
 
 插件会默认选择根目录`/mock`文件夹下所有的`.js`和`.ts`文件来生成mock数据, 文件路径即接口
 
@@ -50,8 +70,12 @@ mock/
 // home.js
 module.exports = {
     result: 1,
-    data: 'success',
 }
+```
+```js
+fetch('/api/home')
+  .then(response => response.json())
+  .then(data => console.log(data)); // { result: 1}
 ```
 mock文件可以直接返回数据, 这样任何请求`/api/home`都将返回相同的数据
 
@@ -69,10 +93,12 @@ module.exports = (request) => {
     if (request.method === 'GET') {
         return {
             result: 1,
+            method: request.method,
         }
     } else {
         return {
             result: 2,
+            method: request.method,
         }
     }
 }
