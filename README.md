@@ -28,9 +28,9 @@ export default {
 
 ```ts
 interface MockPluginOptions {
-  dir?: string; // default 'mock'
+  dir?: string;
   enable?: boolean;
-  refreshOnSave?: boolean; // default true
+  refreshOnSave?: boolean;
 }
 ```
 ## Options
@@ -38,20 +38,20 @@ interface MockPluginOptions {
 - **Type:** `string`
 - **Default:** `mock`
 
-the mock file dir relative to vite root, use mock by default
+The mock file folder relative to vite root, use `mock` by default
 
 ### enable
 - **Type:** `boolean`
 - **Default:** `true`
 
-enable mock plugin or not
-this plugin load only in `serve`
+Enable mock plugin or not.
+This plugin load only in `serve`
 
 ### refreshOnSave
 - **Type:** `boolean`
 - **Default:** `true`
 
-when mock file change, the browser will be refresh
+When mock file change, the browser will be refresh
 
 ## overview
 
