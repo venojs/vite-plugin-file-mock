@@ -27,7 +27,8 @@ function handleMock(server: ViteDevServer, root: string, options: MockPluginOpti
     const mockDirPath = resolve(root, options.dir!);
     const apiList = getApiList(mockDirPath);
     server.middlewares.use((request, response, next) => {
-        const currentApi = apiList.find((item) => item.url === request.url);
+        const realUrl = request.url?.split('?')[0] ?? '';
+        const currentApi = apiList.find((item) => item.url === realUrl);
         if (!currentApi) {
             next();
             return;
