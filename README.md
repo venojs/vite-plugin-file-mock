@@ -54,6 +54,13 @@ This plugin load only in `serve`
 
 When mock file change, the browser will be refresh
 
+### noRefreshUrlList
+
+-   **Type:** `Array<string | RegExp>`
+-   **Default:** `[]`
+
+When some file change, you dont want to refresh the browser, you can use this.
+
 ## overview
 
 By default, the plugin will select all `.js` and `.ts` files in the vite root `mock` folder to generate mock data, the api url is just the file path

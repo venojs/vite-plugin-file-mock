@@ -54,6 +54,13 @@ interface MockPluginOptions {
 
 当mock文件变更, 是否刷新浏览器
 
+### noRefreshUrlList
+
+-   **Type:** `Array<string | RegExp>`
+-   **Default:** `[]`
+
+refreshOnSave 会自动开启，当有些接口不想自动刷新页面时，可以放这里，支持正则
+
 ## 概览
 
 插件会默认选择根目录`/mock`文件夹下所有的`.js`和`.ts`文件来生成mock数据, 文件路径即接口

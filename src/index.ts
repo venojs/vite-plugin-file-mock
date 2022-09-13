@@ -10,6 +10,26 @@ export interface MockPluginOptions {
     dir?: string;
     enable?: boolean;
     refreshOnSave?: boolean;
+    noRefreshUrlList?: Array<string | RegExp>;
+}
+
+function createReg(condition: Array<RegExp | string>): RegExp | null {
+    const arr = condition
+        .filter((item: RegExp | string) => !!item)
+        .map((item: RegExp | string) => {
+            if (item instanceof RegExp) {
+                return item.source;
+            }
+            return item;
+        });
+    if (arr.length) {
+        return new RegExp(arr.join('|'));
+    }
+    return null;
+}
+
+function isMatch(reg: RegExp | null, str: string) {
+    return reg && reg.test(str);
 }
 
 function getApiList(mockDirPath: string) {
@@ -26,6 +46,7 @@ function getApiList(mockDirPath: string) {
 function handleMock(server: ViteDevServer, root: string, options: MockPluginOptions) {
     const mockDirPath = resolve(root, options.dir!);
     const apiList = getApiList(mockDirPath);
+    const noRefreshReg = createReg(options.noRefreshUrlList ?? []);
     server.middlewares.use((request, response, next) => {
         const realUrl = request.url?.split('?')[0] ?? '';
         const currentApi = apiList.find((item) => item.url === realUrl);
@@ -36,10 +57,12 @@ function handleMock(server: ViteDevServer, root: string, options: MockPluginOpti
         try {
             const requireContent = require(currentApi.path);
             const result = typeof requireContent === 'function' ? requireContent(request) : requireContent;
-            response.setHeader('Content-Type', 'text/json');
+            response.setHeader('Content-Type', 'application/json');
             response.statusCode = 200;
             response.end(JSON.stringify(result));
         } catch (e) {
+            // 在控制台打出报错信息, 给用户明确的提示
+            console.log('vite-plugin-file-mock error:', e);
             next();
         }
     });
@@ -50,7 +73,8 @@ function handleMock(server: ViteDevServer, root: string, options: MockPluginOpti
             if (path.startsWith(mockDirPath)) {
                 log(`File ${path} has been ${event}`);
                 delete require.cache[path];
-                if (options.refreshOnSave) {
+                const url = apiList.find((item) => item.path === path)?.url ?? '';
+                if (options.refreshOnSave && !isMatch(noRefreshReg, url)) {
                     server.ws.send({
                         type: 'full-reload',
                     });
@@ -61,9 +85,10 @@ function handleMock(server: ViteDevServer, root: string, options: MockPluginOpti
 }
 
 const defaultOptions: MockPluginOptions = {
+    dir: defaultDir,
     enable: true,
     refreshOnSave: true,
-    dir: defaultDir,
+    noRefreshUrlList: [],
 };
 
 export default function mockPlugin(options?: MockPluginOptions): Plugin {
