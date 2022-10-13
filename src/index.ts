@@ -1,10 +1,12 @@
 import glob from 'fast-glob';
+import createJITI from 'jiti';
 import { resolve } from 'path';
-import type { ViteDevServer, Plugin, ResolvedConfig } from 'vite';
+import type { ViteDevServer, Plugin, ResolvedConfig, Connect } from 'vite';
 import debug from 'debug';
 
 const log = debug('vite-plugin-file-mock');
 const defaultDir = 'mock';
+const jiti = createJITI(__filename);
 
 export interface MockPluginOptions {
     dir?: string;
@@ -43,6 +45,17 @@ function getApiList(mockDirPath: string) {
     }));
 }
 
+export function getContent(path: string, request?: Connect.IncomingMessage) {
+    let content = jiti(path);
+    if (content.default) {
+        content = content.default;
+    }
+    if (typeof content === 'function') {
+        return content(request);
+    }
+    return content;
+}
+
 function handleMock(server: ViteDevServer, root: string, options: MockPluginOptions) {
     const mockDirPath = resolve(root, options.dir!);
     const apiList = getApiList(mockDirPath);
@@ -55,8 +68,7 @@ function handleMock(server: ViteDevServer, root: string, options: MockPluginOpti
             return;
         }
         try {
-            const requireContent = require(currentApi.path);
-            const result = typeof requireContent === 'function' ? requireContent(request) : requireContent;
+            const result = getContent(currentApi.path, request)
             response.setHeader('Content-Type', 'application/json');
             response.statusCode = 200;
             response.end(JSON.stringify(result));

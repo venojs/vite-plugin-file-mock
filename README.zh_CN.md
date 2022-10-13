@@ -31,6 +31,7 @@ interface MockPluginOptions {
     dir?: string;
     enable?: boolean;
     refreshOnSave?: boolean;
+    noRefreshUrlList?: Array<string | RegExp>;
 }
 ```
 
@@ -86,7 +87,7 @@ fetch('/api/home')
 ```
 mock文件可以直接返回数据, 这样任何请求`/api/home`都将返回相同的数据
 
-### 自定义内容
+## 自定义内容
 有时候我们需要自定义返回的内容, 比如
 * mock rest接口
 * 根据参数来动态返回内容
@@ -107,6 +108,33 @@ module.exports = (request) => {
             result: 2,
             method: request.method,
         }
+    }
+}
+```
+
+## ts 和 esm 支持
+
+mock 文件同时`.js`和`.ts`, `.js`既可以是 commonjs, 也可以是 esm
+
+```js
+// home.js commonjs
+module.exports = {
+    result: 1,
+};
+```
+
+```js
+// home.js esm
+export default {
+    result: 1,
+};
+```
+
+```js
+// home.ts
+export default () => {
+    return {
+        result: 1
     }
 }
 ```

@@ -31,6 +31,7 @@ interface MockPluginOptions {
   dir?: string;
   enable?: boolean;
   refreshOnSave?: boolean;
+  noRefreshUrlList?: Array<string | RegExp>;
 }
 ```
 ## Options
@@ -84,6 +85,8 @@ fetch('/api/home')
   .then(response => response.json())
   .then(data => console.log(data)); // { result: 1}
 ```
+
+## Customize content
 Sometimes we need to customize the returned content, we can return a function to dynamic generate mock data
 ```js
 // user.js
@@ -99,5 +102,32 @@ module.exports = (request) => {
       method: request.method,
     }
   }
+}
+```
+
+## TypeScript And ESM support
+
+This plugin can support `.js` and `.ts` both, `.js` file can be `commonjs` or `ems`
+
+```js
+// home.js commonjs
+module.exports = {
+    result: 1,
+};
+```
+
+```js
+// home.js esm
+export default {
+    result: 1,
+};
+```
+
+```js
+// home.ts
+export default () => {
+    return {
+        result: 1
+    }
 }
 ```

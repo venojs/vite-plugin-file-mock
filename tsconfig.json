@@ -20,14 +20,12 @@
             "dom"
         ],
         "types": [
+            "vitest/globals",
             "node"
         ]
     },
     "include": [
         "src/**/*",
         "typings/**/*",
-    ],
-    "exclude": [
-        "**/__tests__/*"
     ]
 }
