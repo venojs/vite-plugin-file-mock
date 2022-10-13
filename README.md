@@ -107,7 +107,7 @@ module.exports = (request) => {
 
 ## TypeScript And ESM support
 
-This plugin can support `.js` and `.ts` both, `.js` file can be `commonjs` or `ems`
+This plugin can support `.js` and `.ts` both, `.js` file can be `commonjs` or `esm`
 
 ```js
 // home.js commonjs

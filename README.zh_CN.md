@@ -114,7 +114,7 @@ module.exports = (request) => {
 
 ## ts 和 esm 支持
 
-mock 文件同时`.js`和`.ts`, `.js`既可以是 commonjs, 也可以是 esm
+mock 文件同时`.js`和`.ts`, `.js`既可以是 `commonjs`, 也可以是 `esm`
 
 ```js
 // home.js commonjs
