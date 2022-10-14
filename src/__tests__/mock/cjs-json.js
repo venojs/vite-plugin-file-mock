@@ -1,4 +1,3 @@
-// 任务领取
-module.exports = () => ({
+module.exports = {
     result: 1,
-});
+};

@@ -6,7 +6,9 @@ import debug from 'debug';
 
 const log = debug('vite-plugin-file-mock');
 const defaultDir = 'mock';
-const jiti = createJITI(__filename);
+const jiti = createJITI('', {
+    requireCache: false,
+});
 
 export interface MockPluginOptions {
     dir?: string;
@@ -47,7 +49,7 @@ function getApiList(mockDirPath: string) {
 
 export function getContent(path: string, request?: Connect.IncomingMessage) {
     let content = jiti(path);
-    if (content.default) {
+    if (content.default && content.__esModule) {
         content = content.default;
     }
     if (typeof content === 'function') {
@@ -84,7 +86,6 @@ function handleMock(server: ViteDevServer, root: string, options: MockPluginOpti
         server.watcher.on(event, (path: string) => {
             if (path.startsWith(mockDirPath)) {
                 log(`File ${path} has been ${event}`);
-                delete require.cache[path];
                 const url = apiList.find((item) => item.path === path)?.url ?? '';
                 if (options.refreshOnSave && !isMatch(noRefreshReg, url)) {
                     server.ws.send({

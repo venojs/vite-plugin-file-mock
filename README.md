@@ -64,7 +64,7 @@ When some file change, you dont want to refresh the browser, you can use this.
 
 ## overview
 
-By default, the plugin will select all `.js` and `.ts` files in the vite root `mock` folder to generate mock data, the api url is just the file path
+By default, the plugin will select all `.js` and `.ts`(and `.mjs` or `.cjs`, `.mts` and `.cts` dont support yet) files in the vite root `mock` folder to generate mock data, the api url is just the file path
 
 ```
 mock/
