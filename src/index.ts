@@ -1,14 +1,23 @@
 import glob from 'fast-glob';
 import createJITI from 'jiti';
-import { resolve } from 'path';
+import { resolve, extname } from 'path';
 import type { ViteDevServer, Plugin, ResolvedConfig, Connect } from 'vite';
 import debug from 'debug';
 
 const log = debug('vite-plugin-file-mock');
 const defaultDir = 'mock';
 const jiti = createJITI('', {
+    // 清楚ts和esm的缓存
     requireCache: false,
 });
+// 用于清除cjs缓存
+const nativeRequire = createJITI('');
+
+interface ApiList {
+    url: string;
+    path: string;
+}
+let apiList: ApiList[] = [];
 
 export interface MockPluginOptions {
     dir?: string;
@@ -36,20 +45,20 @@ function isMatch(reg: RegExp | null, str: string) {
     return reg && reg.test(str);
 }
 
-function getApiList(mockDirPath: string) {
-    const files = glob.sync('**/*.{js,ts}', {
+function getApiList(mockDirPath: string): ApiList[] {
+    const files = glob.sync('**/*.{js,cjs,mjs,ts}', {
         cwd: mockDirPath,
         onlyFiles: true,
     });
     return files.map((item) => ({
-        url: `/${item.slice(0, item.length - 3)}`,
+        url: `/${item.slice(0, item.length - extname(item).length)}`,
         path: resolve(mockDirPath, item),
     }));
 }
 
 export function getContent(path: string, request?: Connect.IncomingMessage) {
     let content = jiti(path);
-    if (content.default && content.__esModule) {
+    if (content?.default && content.__esModule) {
         content = content.default;
     }
     if (typeof content === 'function') {
@@ -60,17 +69,24 @@ export function getContent(path: string, request?: Connect.IncomingMessage) {
 
 function handleMock(server: ViteDevServer, root: string, options: MockPluginOptions) {
     const mockDirPath = resolve(root, options.dir!);
-    const apiList = getApiList(mockDirPath);
+
+    apiList = getApiList(mockDirPath);
+
     const noRefreshReg = createReg(options.noRefreshUrlList ?? []);
     server.middlewares.use((request, response, next) => {
         const realUrl = request.url?.split('?')[0] ?? '';
         const currentApi = apiList.find((item) => item.url === realUrl);
         if (!currentApi) {
-            next();
-            return;
+            return next();
         }
         try {
-            const result = getContent(currentApi.path, request)
+            const result = getContent(currentApi.path, request);
+            const len = Object.keys(result).length;
+            // 文件内容全部注释jiti解析出来为{}
+            // export default {} && undefined, jiti解析出来为{default: undefined}
+            if (len === 0 || (len === 1 && result.default === undefined)) {
+                return next();
+            }
             response.setHeader('Content-Type', 'application/json');
             response.statusCode = 200;
             response.end(JSON.stringify(result));
@@ -82,15 +98,24 @@ function handleMock(server: ViteDevServer, root: string, options: MockPluginOpti
     });
 
     // 实时响应mock文件的修改
-    ['add', 'onlink', 'change'].forEach((event) => {
+    ['add', 'unlink', 'change'].forEach((event) => {
         server.watcher.on(event, (path: string) => {
             if (path.startsWith(mockDirPath)) {
+                // 文件增加和删除时更新下apiList
+                if (['add', 'unlink'].includes(event)) {
+                    apiList = getApiList(mockDirPath);
+                }
                 log(`File ${path} has been ${event}`);
+                delete nativeRequire.cache[path];
                 const url = apiList.find((item) => item.path === path)?.url ?? '';
-                if (options.refreshOnSave && !isMatch(noRefreshReg, url)) {
-                    server.ws.send({
-                        type: 'full-reload',
-                    });
+                if (options.refreshOnSave) {
+                    if (isMatch(noRefreshReg, url)) {
+                        log(`File ${path} match noRefreshUrlList`);
+                    } else {
+                        server.ws.send({
+                            type: 'full-reload',
+                        });
+                    }
                 }
             }
         });
