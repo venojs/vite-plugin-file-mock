@@ -4,16 +4,22 @@
 
 **中文** | [English](./README.md)
 
-## 安装
+## 目录
+
+-   [安装与使用](#安装与使用)
+-   [选项](#选项)
+-   [概览](#概览)
+-   [自定义内容](#自定义内容)
+-   [TypeScript 和 ESM 支持](#typescript-和-esm-支持)
+-   [异步函数](#异步函数)
+-   [忽略指定接口](#忽略指定接口)
+
+## 安装与使用
 ```shell
 yarn add vite-plugin-file-mock -D
 # or
 npm i vite-plugin-file-mock -D
 ```
-
-## 使用
-
-可以看看这个[例子](./example/)
 
 ```js
 // vite.config.js
@@ -34,6 +40,8 @@ interface MockPluginOptions {
     noRefreshUrlList?: Array<string | RegExp>;
 }
 ```
+
+可以看看这个[例子](./example/)
 
 ## 选项
 ### dir
@@ -112,7 +120,7 @@ module.exports = (request) => {
 }
 ```
 
-## ts 和 esm 支持
+## TypeScript 和 ESM 支持
 
 mock 文件同时`.js`和`.ts`, `.js`既可以是 `commonjs`, 也可以是 `esm`
 
@@ -137,4 +145,49 @@ export default () => {
         result: 1
     }
 }
+```
+
+## 异步函数
+
+mock 文件也支持异步函数, 这样允许用更多的自定义
+
+```js
+async function delay(time) {
+    return new Promise((resolve, reject) => {
+        setTimeout(resolve, time);
+    });
+}
+
+// 5秒后返回数据
+export default async () => {
+    const data = {
+        result: 1,
+    };
+
+    await delay(5000);
+
+    return data;
+};
+```
+
+## 忽略指定接口
+
+忽略指定接口有两种做法：
+
+1. 把整个文件注释
+
+```js
+// home.js
+// export default {
+//     result: 1,
+// };
+```
+
+2. 返回 undefined
+
+```js
+// home.js
+export default {
+    result: 1,
+} && undefined;
 ```

@@ -4,7 +4,9 @@ import { resolve, extname } from 'path';
 import type { ViteDevServer, Plugin, ResolvedConfig, Connect } from 'vite';
 import debug from 'debug';
 
-const log = debug('vite-plugin-file-mock');
+const pluginName = 'vite-plugin-file-mock';
+
+const log = debug(pluginName);
 const defaultDir = 'mock';
 const jiti = createJITI('', {
     // 清楚ts和esm的缓存
@@ -56,9 +58,9 @@ function getApiList(mockDirPath: string): ApiList[] {
     }));
 }
 
-export function getContent(path: string, request?: Connect.IncomingMessage) {
+export async function getContent(path: string, request?: Connect.IncomingMessage) {
     let content = jiti(path);
-    if (content?.default && content.__esModule) {
+    if (content && content.__esModule) {
         content = content.default;
     }
     if (typeof content === 'function') {
@@ -73,18 +75,17 @@ function handleMock(server: ViteDevServer, root: string, options: MockPluginOpti
     apiList = getApiList(mockDirPath);
 
     const noRefreshReg = createReg(options.noRefreshUrlList ?? []);
-    server.middlewares.use((request, response, next) => {
+    server.middlewares.use(async (request, response, next) => {
         const realUrl = request.url?.split('?')[0] ?? '';
         const currentApi = apiList.find((item) => item.url === realUrl);
         if (!currentApi) {
             return next();
         }
         try {
-            const result = getContent(currentApi.path, request);
-            const len = Object.keys(result).length;
-            // 文件内容全部注释jiti解析出来为{}
-            // export default {} && undefined, jiti解析出来为{default: undefined}
-            if (len === 0 || (len === 1 && result.default === undefined)) {
+            const result = await getContent(currentApi.path, request);
+            // 文件内容全部注释getContent解析出来为{}
+            // export default {} && undefined, getContent解析出来为undefined
+            if (typeof result === 'undefined' || Object.keys(result).length === 0) {
                 return next();
             }
             response.setHeader('Content-Type', 'application/json');
@@ -92,7 +93,7 @@ function handleMock(server: ViteDevServer, root: string, options: MockPluginOpti
             response.end(JSON.stringify(result));
         } catch (e) {
             // 在控制台打出报错信息, 给用户明确的提示
-            console.log('vite-plugin-file-mock error:', e);
+            console.log(`${pluginName} error when requesting ${realUrl}:\n`, e);
             next();
         }
     });
@@ -133,7 +134,7 @@ export default function mockPlugin(options?: MockPluginOptions): Plugin {
     let viteRoot: string;
     const resolvedOptions: MockPluginOptions = { ...defaultOptions, ...(options ?? {}) };
     return {
-        name: 'vite-plugin-file-mock',
+        name: pluginName,
         enforce: 'pre',
         apply: 'serve',
         configResolved({ root }: ResolvedConfig) {

@@ -4,16 +4,23 @@
 
 **English** | [中文](./README.zh_CN.md)
 
-## Install
+## Table of Contents
+
+-   [Usage](#usage)
+-   [Options](#options)
+-   [Overview](#overview)
+-   [Customize Content](#customize-content)
+-   [TypeScript And ESM Support](#typescript-and-esm-support)
+-   [Async Function](#async-function)
+-   [Ignore Interface](#ignore-interface)
+
+## Usage
+
 ```shell
 yarn add vite-plugin-file-mock -D
 # or
 npm i vite-plugin-file-mock -D
 ```
-
-## Usage
-
-See [example](./example/) for more detail
 
 ```js
 // vite.config.js
@@ -34,6 +41,8 @@ interface MockPluginOptions {
   noRefreshUrlList?: Array<string | RegExp>;
 }
 ```
+See [example](./example/) for more detail
+
 ## Options
 ### dir
 - **Type:** `string`
@@ -62,7 +71,7 @@ When mock file change, the browser will be refresh
 
 When some file change, you dont want to refresh the browser, you can use this.
 
-## overview
+## Overview
 
 By default, the plugin will select all `.js` and `.ts`(and `.mjs` or `.cjs`, `.mts` and `.cts` dont support yet) files in the vite root `mock` folder to generate mock data, the api url is just the file path
 
@@ -86,7 +95,7 @@ fetch('/api/home')
   .then(data => console.log(data)); // { result: 1}
 ```
 
-## Customize content
+## Customize Content
 Sometimes we need to customize the returned content, we can return a function to dynamic generate mock data
 ```js
 // user.js
@@ -105,7 +114,7 @@ module.exports = (request) => {
 }
 ```
 
-## TypeScript And ESM support
+## TypeScript And ESM Support
 
 This plugin can support `.js` and `.ts` both, `.js` file can be `commonjs` or `esm`
 
@@ -131,3 +140,49 @@ export default () => {
     }
 }
 ```
+
+## Async Function
+
+mock can also support async function, so that you can do more thing;
+
+```js
+async function delay(time) {
+    return new Promise((resolve, reject) => {
+        setTimeout(resolve, time);
+    });
+}
+
+// return data after 5 second
+export default async () => {
+    const data = {
+        result: 1,
+    };
+
+    await delay(5000);
+
+    return data;
+};
+```
+
+## Ignore Interface
+
+Sometimes we dont want the some data from local, you can do two ways
+
+1. comment the file
+
+```js
+// home.js
+// export default {
+//     result: 1,
+// };
+```
+
+2. return undefined
+
+```js
+// home.js
+export default {
+    result: 1,
+} && undefined;
+```
+
