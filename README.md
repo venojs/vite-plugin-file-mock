@@ -166,7 +166,7 @@ export default async () => {
 
 ## Ignore Interface
 
-Sometimes we dont want the some data from local, you can do two ways
+Sometimes we dont want the data from local, you can do this in two ways
 
 1. comment the file
 
