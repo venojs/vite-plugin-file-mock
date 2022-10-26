@@ -35,6 +35,9 @@ describe('vite-plugin-mock getContent', () => {
     });
 
     test('ignore undefined', async () => {
-        await expect(getContent(resolve(path, './mock/ignore/undefined.js'))).resolves.toBeUndefined();
+        await expect(getContent(resolve(path, './mock/ignore/undefined-cjs.js'))).resolves.toBeUndefined();
+        await expect(getContent(resolve(path, './mock/ignore/undefined-esm.js'))).resolves.toBeUndefined();
+        await expect(getContent(resolve(path, './mock/ignore/undefined-ts.ts'))).resolves.toBeUndefined();
+        await expect(getContent(resolve(path, './mock/ignore/undefined-func.js'))).resolves.toBeUndefined();
     });
 });
