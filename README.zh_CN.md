@@ -103,20 +103,29 @@ mock文件可以直接返回数据, 这样任何请求`/api/home`都将返回相
 * ...
 
 这时候, 可以让mock文件返回一个函数, 函数里再返回我们需要自定义的内容
+也可以直接使用 `response` 来定义 `statusCode`, `header`, `data` 等
+
+> 如果函数里没有调用 response.end, 则函数的返回值会作为最终 response 返回的值
 ```js
 // user.js
-module.exports = (request) => {
+module.exports = (request, response) => {
     if (request.method === 'GET') {
-        return {
-            result: 1,
-            method: request.method,
-        }
-    } else {
-        return {
-            result: 2,
-            method: request.method,
-        }
+    return {
+        result: 1,
+        method: request.method,
     }
+  } else if (request.method === 'POST') {
+    return {
+        result: 2,
+        method: request.method,
+    }
+  } else {
+    response.statusCode = 500;
+    response.end(JSON.stringify({
+        result: 3,
+        method: request.method,
+    }));
+  }
 }
 ```
 

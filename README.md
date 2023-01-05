@@ -96,20 +96,28 @@ fetch('/api/home')
 ```
 
 ## Customize Content
-Sometimes we need to customize the returned content, we can return a function to dynamic generate mock data
+Sometimes we need to customize the returned content, we can return a function to dynamic generate mock data.
+Or you can use `response` to generate `statusCode`, `header`, `responseData` etc.
+> If response.end is not called in the function, the return value of the function will be the value returned by the final response
 ```js
 // user.js
-module.exports = (request) => {
+module.exports = (request, response) => {
   if (request.method === 'GET') {
     return {
-      result: 1,
-      method: request.method,
+        result: 1,
+        method: request.method,
+    }
+  } else if (request.method === 'POST') {
+    return {
+        result: 2,
+        method: request.method,
     }
   } else {
-    return {
-      result: 2,
-      method: request.method,
-    }
+    response.statusCode = 500;
+    response.end(JSON.stringify({
+        result: 3,
+        method: request.method,
+    }));
   }
 }
 ```

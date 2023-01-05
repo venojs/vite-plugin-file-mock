@@ -2,6 +2,7 @@ import glob from 'fast-glob';
 import createJITI from 'jiti';
 import { resolve, extname } from 'path';
 import type { ViteDevServer, Plugin, ResolvedConfig, Connect } from 'vite';
+import type { ServerResponse } from 'node:http';
 import debug from 'debug';
 
 const pluginName = 'vite-plugin-file-mock';
@@ -58,13 +59,13 @@ function getApiList(mockDirPath: string): ApiList[] {
     }));
 }
 
-export async function getContent(path: string, request?: Connect.IncomingMessage) {
+export async function getContent(path: string, request?: Connect.IncomingMessage, response?: ServerResponse) {
     let content = jiti(path);
     if (content && content.__esModule) {
         content = content.default;
     }
     if (typeof content === 'function') {
-        return content(request);
+        return content(request, response);
     }
     return content;
 }
@@ -82,15 +83,19 @@ function handleMock(server: ViteDevServer, root: string, options: MockPluginOpti
             return next();
         }
         try {
-            const result = await getContent(currentApi.path, request);
-            // 文件内容全部注释getContent解析出来为{}
-            // export default {} && undefined, getContent解析出来为undefined
-            if (typeof result === 'undefined' || Object.keys(result).length === 0) {
-                return next();
+            const result = await getContent(currentApi.path, request, response);
+            if (!response.writableEnded) {
+                // 文件内容全部注释getContent解析出来为{}
+                // export default {} && undefined, getContent解析出来为undefined
+                if (typeof result === 'undefined' || Object.keys(result).length === 0) {
+                    return next();
+                }
+                if (!response.hasHeader('Content-Type')) {
+                    response.setHeader('Content-Type', 'application/json');
+                }
+                response.statusCode = response.statusCode ?? 200;
+                response.end(JSON.stringify(result));
             }
-            response.setHeader('Content-Type', 'application/json');
-            response.statusCode = 200;
-            response.end(JSON.stringify(result));
         } catch (e) {
             // 在控制台打出报错信息, 给用户明确的提示
             console.log(`${pluginName} error when requesting ${realUrl}:\n`, e);
